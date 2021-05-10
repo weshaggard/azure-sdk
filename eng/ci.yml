@@ -12,9 +12,21 @@ resources:
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  BUNDLE_PATH: $(Pipeline.Workspace)/.bundle
+
 steps:
 - checkout: self
 - checkout: azure-sdk-tools
+
+- task: Cache@2
+  inputs:
+    key: 'gems | "$(Agent.OS)" | GemFile | GemFile.lock'
+    restoreKeys: |
+      gems | "$(Agent.OS)"
+      gems
+    path: $(BUNDLE_PATH)
+  displayName: Cache gems
 
 - script: |
     bundle install
