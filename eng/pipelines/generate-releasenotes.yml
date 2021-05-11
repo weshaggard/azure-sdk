@@ -1,7 +1,4 @@
 parameters:
-- name: BaseBranchName
-  type: string
-  default: $(Build.SourceBranchName)
 - name: PrBranchName
   type: string
   default: "CreateOrUpdateReleaseDataFor"
@@ -16,38 +13,17 @@ parameters:
       Language: dotnet
     azure-sdk-for-python:
       Language: python
-
-trigger: none
-
-pr: none
-
-pool:
-  vmImage: 'windows-2019'
-
-resources:
-  repositories:
-    - repository: azure-sdk-tools
-      type: github
-      name: Azure/azure-sdk-tools
-      endpoint: azure
-
+    
 steps:
-  - checkout: azure-sdk-tools
-
   - pwsh: |
       $releasePeriod = Get-Date -Format "yyyy-MM"
       Write-Host "##vso[task.setvariable variable=ReleasePeriod]$releasePeriod"
     displayName: Set Release Period Value
 
   - ${{ each repo in parameters.Repos }}:
-    - checkout: self
-
-    - pwsh: |
-        git clone --branch ${{ parameters.BaseBranchName }} "https://github.com/azure/${{ repo.key }}"
-      displayName: Clone ${{ repo.key }} repo
-
     - pwsh: |
         $ErrorActionPreference = "Continue"
+        git reset --hard $(DefaultBranch)
         git checkout "origin/${{ parameters.PrBranchName }}_${{ repo.value.Language }}_$(ReleasePeriod)" 2>&1 | Out-Null
         $LASTEXITCODE = 0 # This ignores any error from git checkout
         git status
@@ -65,11 +41,13 @@ steps:
           -languageRepoDirectory $(System.DefaultWorkingDirectory)/${{ repo.key }}
           -releaseDirectory $(System.DefaultWorkingDirectory)/azure-sdk/releases
           -releaseFileName ${{ repo.value.Language }}
+          -ChangedPackages ${{ parameters.ChangedPackages }}
 
     - template: eng/common/pipelines/templates/steps/create-pull-request.yml@azure-sdk-tools
       parameters:
         RepoName: azure-sdk
         PROwner: Azure
+        BaseBranchName: $(DefaultBranch)
         PRBranchName: '${{ parameters.PrBranchName }}_${{ repo.value.Language }}_$(ReleasePeriod)'
         CommitMsg: "${{ repo.value.Language }} release notes for the $(ReleasePeriod) release"
         PRTitle: "${{ repo.value.Language }} release notes for the $(ReleasePeriod) release"

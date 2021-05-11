@@ -3,7 +3,8 @@ param (
   [string]$language = "all",
   [bool]$checkDocLinks = $true,
   [bool]$compareTagVsGHIOVersions = $false,
-  [string] $github_pat = $env:GITHUB_PAT
+  [string] $github_pat = $env:GITHUB_PAT,
+  [string] $changedPackageOutputFile = ""
 )
 Set-StrictMode -Version 3
 $ProgressPreference = "SilentlyContinue"; # Disable invoke-webrequest progress dialog
@@ -169,6 +170,7 @@ function GetFirstGADate($pkgVersion, $pkg)
 
 function Update-Packages($lang, $packageList, $langVersions, $langLinkTemplates)
 {
+  $updatedPackages = @()
   foreach ($pkg in $packageList)
   {
     if ($langVersions.ContainsKey($pkg.Package)) {
@@ -209,6 +211,7 @@ function Update-Packages($lang, $packageList, $langVersions, $langLinkTemplates)
       if (CheckRequiredLinks $langLinkTemplates $pkg $version){
         Write-Host "Updating VersionGA $($pkg.Package) from $($pkg.VersionGA) to $version"
         $pkg.VersionGA = $version;
+        $updatedPackages += $pkg
       }
       else {
         Write-Warning "Not updating VersionGA for $($pkg.Package) because at least one associated URL is not valid!"
@@ -230,6 +233,7 @@ function Update-Packages($lang, $packageList, $langVersions, $langLinkTemplates)
       if (CheckRequiredlinks $langLinkTemplates $pkg $version) {
         Write-Host "Updating VersionPreview $($pkg.Package) from $($pkg.VersionPreview) to $version"
         $pkg.VersionPreview = $version;
+        $updatedPackages += $pkg
       }
       else {
         Write-Warning "Not updating VersionPreview for $($pkg.Package) because at least one associated URL is not valid!"
@@ -237,6 +241,7 @@ function Update-Packages($lang, $packageList, $langVersions, $langLinkTemplates)
     }
     CheckOptionalLinks $langLinkTemplates $pkg
   }
+  return $updatedPackages
 }
 
 function OutputVersions($lang)
@@ -256,7 +261,8 @@ function OutputVersions($lang)
     }
   }
 
-  Update-Packages $lang $clientPackages $langVersions $langLinkTemplates
+  $updatedPackages = Update-Packages $lang $clientPackages $langVersions $langLinkTemplates
+  $updatedPackages | % { $_ | Add-Member -NotePropertyName "Language" -NotePropertyValue $lang }
 
   foreach($otherPackage in $otherPackages)
   {
@@ -264,14 +270,19 @@ function OutputVersions($lang)
   }
 
   Set-PackageListForLanguage $lang ($clientPackages + $otherPackages)
+  return $updatedPackages
 }
 
 function OutputAll($langs)
 {
+  $updatedPackages = @()
   $langs = $langs | Sort-Object
   foreach ($lang in $langs)
   {
-    OutputVersions $lang
+    $updatedPackage += OutputVersions $lang
+  }
+  if ($changedPackageOutputFile) {
+    $updatedPackages | ConvertTo-CSV -NoTypeInformation -UseQuotes Always | Out-File $changedPackageOutputFile -encoding ascii
   }
 }
 
