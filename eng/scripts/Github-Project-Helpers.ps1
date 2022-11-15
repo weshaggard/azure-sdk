@@ -54,7 +54,7 @@ function Remove-GithubIssueFromProject([string]$projectId, [string]$projectItemI
 
 function EnablePullRequestAutoMerge([string]$pullRequestId)
 {
-  gh api graphql -F projectId=$projectId -F pullRequestId=$pullRequestId -f query='
+  gh api graphql -F pullRequestId=$pullRequestId -f query='
     mutation($pullRequestId: ID!) {
       enablePullRequestAutoMerge(input: {pullRequestId: $pullRequestId, mergeMethod: SQUASH}) {
         clientMutationId
@@ -64,7 +64,7 @@ function EnablePullRequestAutoMerge([string]$pullRequestId)
 
 function DisablePullRequestAutoMerge([string]$pullRequestId)
 {
-  gh api graphql -F projectId=$projectId -F pullRequestId=$pullRequestId -f query='
+  gh api graphql -F pullRequestId=$pullRequestId -f query='
     mutation($pullRequestId: ID!) {
       disablePullRequestAutoMerge(input: {pullRequestId: $pullRequestId}) {
         clientMutationId
