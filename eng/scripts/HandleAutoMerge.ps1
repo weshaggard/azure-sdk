@@ -9,6 +9,9 @@ param(
 )
 Set-StrictMode -Version 3
 
+#Test commit
+
+
 . $PSScriptRoot/Github-Project-Helpers.ps1
 
 Write-Verbose $(gh api -H "Accept: application/vnd.github.v3+json" /rate_limit --jq '.resources')
