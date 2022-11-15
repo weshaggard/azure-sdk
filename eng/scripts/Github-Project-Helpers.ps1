@@ -60,7 +60,8 @@ function EnablePullRequestAutoMerge([string]$pullRequestId)
         clientMutationId
       }
     }'
-    return $LASTEXITCODE -eq 0
+  Write-Host "LASTEXITCODE = $LASTEXITCODE"
+  return $LASTEXITCODE -eq 0
 }
 
 function DisablePullRequestAutoMerge([string]$pullRequestId)
@@ -71,5 +72,6 @@ function DisablePullRequestAutoMerge([string]$pullRequestId)
         clientMutationId
       }
     }'
+  Write-Host "LASTEXITCODE = $LASTEXITCODE"
   return $LASTEXITCODE -eq 0
 }
