@@ -34,6 +34,7 @@ else {
 Write-Verbose (gh api -H "Accept: application/vnd.github.v3+json" /rate_limit --jq '.resources')
 
 if (!$succeeded) {
+  Write-Error "Step failed"
   exit 1
 }
 exit 0
