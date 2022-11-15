@@ -28,3 +28,5 @@ else {
 }
 
 Write-Verbose (gh api -H "Accept: application/vnd.github.v3+json" /rate_limit --jq '.resources')
+
+exit $LASTEXITCODE
