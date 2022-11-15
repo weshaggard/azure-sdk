@@ -60,6 +60,7 @@ function EnablePullRequestAutoMerge([string]$pullRequestId)
         clientMutationId
       }
     }'
+    Write-Host "Error code: $LASTEXITCODE"
 }
 
 function DisablePullRequestAutoMerge([string]$pullRequestId)
@@ -70,4 +71,5 @@ function DisablePullRequestAutoMerge([string]$pullRequestId)
         clientMutationId
       }
     }'
+  Write-Host "Error code: $LASTEXITCODE"
 }
