@@ -21,15 +21,19 @@ if ($label -ne "auto-merge") {
   exit 0
 }
 
+$succeeded = $true
 if ($labelAdded) {
   Write-Host "Enabling auto merge for pull request $pullRequestNumber because [$label] was added."
-  EnablePullRequestAutoMerge $pullRequestId
+  $succeeded = EnablePullRequestAutoMerge $pullRequestId
 }
 else {
   Write-Host "Disabling auto merge for pull request $pullRequestNumber because [$label] was removed."
-  DisablePullRequestAutoMerge $pullRequestId
+  $succeeded = DisablePullRequestAutoMerge $pullRequestId
 }
 
 Write-Verbose (gh api -H "Accept: application/vnd.github.v3+json" /rate_limit --jq '.resources')
 
-exit $LASTEXITCODE
+if (!$succeeded) {
+  exit 1
+}
+exit 0
