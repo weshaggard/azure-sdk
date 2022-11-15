@@ -1,0 +1,23 @@
+name: Handle auto-merge
+
+on:
+  pull_request_target:
+    types: [labeled, unlabeled]
+
+jobs:
+  handle_auto_merge_label:
+    name: Check for auto-merge label
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check for auto-merge
+        run: |
+          ${{ github.workspace }}/eng/scripts/Check-Auto-Merge.ps1 `
+           -label "${{ github.event.label.name }}" `
+           -pullRequestId "${{ github.event.pull_request.node_id }}" `
+           -pullRequestNumber "${{ github.event.pull_request.number }}" `
+           -labelAdded:$("${{ github.event.action }}" -eq "labeled") `
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
