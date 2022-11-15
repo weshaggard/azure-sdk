@@ -13,8 +13,8 @@ Set-StrictMode -Version 3
 
 Write-Verbose $(gh api -H "Accept: application/vnd.github.v3+json" /rate_limit --jq '.resources')
 
-if ($labelAdded -ne "auto-merge") {
-  Write-Host "Skipping action because the label name is [$labelAdded] which is not [auto-merge]."
+if ($label -ne "auto-merge") {
+  Write-Host "Skipping action because the label name is [$label] which is not [auto-merge]."
   exit 0
 }
 
